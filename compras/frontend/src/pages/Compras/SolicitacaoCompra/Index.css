@@ -1,0 +1,67 @@
+.page-container {
+  padding: 16px;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.selected-count {
+  font-weight: 500;
+}
+
+.gestao-select {
+  margin-bottom: 16px;
+}
+
+.empty-message {
+  margin-top: 8px;
+}
+
+.loading-backdrop {
+  color: #fff;
+  z-index: 1301; /* MUI drawer +1 */
+}
+.quantity-box.disabled {
+  background-color: #b0b0b0; /* cinza médio */
+  color: rgba(255, 255, 255, 0.5); /* deixa mais claro ou cinza */
+  cursor: not-allowed;
+}
+
+.quantity-box.disabled .MuiIconButton-root {
+  cursor: not-allowed;
+}
+
+.quantity-container {
+  display: flex;
+  height: 100%;
+}
+
+.quantity-box {
+  background-color: #1976d2;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: min-content;
+  align-self: center;
+}
+
+.quantity-box .MuiIconButton-root {
+  color: white;
+  padding: 4px;
+}
+
+.quantity-box .quantity-text {
+  font-weight: 600;
+}

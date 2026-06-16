@@ -1,0 +1,1 @@
+import{j as s}from"./index.js";import{S as e}from"./Snackbar2.js";function u({open:t,onClose:n,message:a,vertical:r="top",horizontal:o="center"}){return s.jsx(e,{anchorOrigin:{vertical:r,horizontal:o},open:t,onClose:n,message:a,autoHideDuration:3e3},r+o)}export{u as C};
