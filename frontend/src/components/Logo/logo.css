@@ -1,0 +1,15 @@
+.logo{
+    background-color: var(--nav-color);
+    display: flex;
+    justify-content: center;
+    border-bottom: 1px solid;
+    border-color: #ffffff47;
+    padding: 10px;
+}
+
+.img{
+    height: 100%;
+    aspect-ratio: 1;
+    object-fit: contain;
+    object-position: center;
+}

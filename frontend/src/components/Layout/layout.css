@@ -1,0 +1,47 @@
+
+.app {
+    margin: 0px;
+  }
+
+.top-grid{
+    display: grid;
+    grid-template-columns: var(--logo-width) 1fr;
+    grid-template-rows: var(--header-height);
+    grid-template-areas: "logo header";
+    transition: grid-template-columns 0.3s ease;
+}
+
+.main-grid{
+    display: grid;
+    grid-template-columns: var(--aside-width) 1fr;
+    grid-template-areas: 
+        "menu content";
+    height: calc(100vh - var(--header-height));
+    transition: grid-template-columns 0.3s ease;
+}
+
+.menu-toggled{
+    grid-template-columns: var(--aside-toggled-width) 1fr;
+}
+
+aside.logo{
+    grid-area: logo;
+
+}
+
+aside.header{
+    grid-area: header;
+
+}
+
+aside.menu{
+    grid-area: menu;
+}
+
+aside.content{
+    grid-area: content; 
+}
+
+.main-container{
+    overflow-y: auto;
+}
