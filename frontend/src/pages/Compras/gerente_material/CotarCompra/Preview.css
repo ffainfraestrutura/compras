@@ -1,0 +1,9 @@
+.logo-image{
+    height: 125px;
+    width: 125px;
+    aspect-ratio: 1;
+    background-color: none;
+    object-fit: contain;
+    object-position: center;
+    background-color: none;
+}

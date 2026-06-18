@@ -1,0 +1,128 @@
+.menu-option-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.menu-option-container {
+  position: relative;
+}
+
+.menu-option {
+  min-width: 100%;
+  display: flex;
+  color: var(--nav-text-color);
+  flex-direction: row;
+  align-items: center;
+  padding: 20px 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  position: relative;
+}
+
+.menu-option:hover {
+  background-color: #35414d;
+  color: #fff;
+}
+
+.menu-option > .menu-option-icon {
+  margin: 0px 10px;
+  font-size: 20px;
+  transition: font-size 0.3s ease;
+  flex-shrink: 0;
+}
+.menu-option svg:last-child {
+  flex-shrink: 0; /* ícone da seta não encolhe */
+}
+.menu-option-text {
+  flex: 1;
+  font-size: 14px;
+  max-width: 200px;
+  max-height: 200px;
+  opacity: 1;
+  visibility: visible;
+  white-space: wrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity 0.3s ease, visibility 0.3s ease, max-width 0.3s ease,
+    max-height 0.6s ease-in, white-space 0.3s ease;
+  margin: 0;
+}
+
+.menu-option.toggled {
+  padding: 10px;
+}
+
+.menu-option.toggled > .menu-option-icon {
+  font-size: 28px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.menu-option.toggled > .menu-option-text {
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  max-width: 0;
+  max-height: 0;
+}
+
+.submenu-container {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  color: var(--nav-text-color) !important;
+  background-color: var(--nav-color) !important;
+}
+
+.submenu-container-toggled {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  position: absolute;
+  color: var(--background);
+  left: 100%;
+  top: 0;
+  z-index: 9999;
+  min-width: 250px;
+}
+
+@keyframes slideDownFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.submenu-item {
+  min-width: 100%;
+  padding: 15px 40px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  flex-direction: row;
+  align-items: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  opacity: 0;
+  animation-name: slideDownFadeIn;
+  animation-fill-mode: forwards; /* mantém o estado final */
+  animation-duration: 300ms;
+  animation-timing-function: ease-out;
+}
+
+.submenu-title {
+  min-width: 100%;
+  padding: 15px 40px;
+  font-size: 0.9rem;
+  flex-direction: row;
+  align-items: center;
+  opacity: 0;
+  animation-name: slideDownFadeIn;
+  animation-fill-mode: forwards; /* mantém o estado final */
+  animation-duration: 300ms;
+  animation-timing-function: ease-out;
+}
+
+.submenu-item:hover {
+  background-color: #35414d;
+  color: #fff;
+}
