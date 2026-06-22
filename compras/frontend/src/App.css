@@ -1,0 +1,13 @@
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.no-translate,
+.no-translate * {
+    -webkit-locale: "pt-BR" !important;
+    locale: "pt-BR" !important;
+    translate: no !important;
+    -webkit-translate: no !important;
+}

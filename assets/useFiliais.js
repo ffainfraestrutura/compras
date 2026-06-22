@@ -1,0 +1,1 @@
+import{r as s,a as n}from"./index.js";function f(){const[i,r]=s.useState([]),[o,a]=s.useState(!1),[l,c]=s.useState(!1),e="https://localhost/backend/public/api/filiais";return s.useEffect(()=>{a(!0),n.get(e).then(t=>r(t.data)).catch(t=>{console.error("Erro ao buscar filiais:",t),c(!0)}).finally(()=>a(!1))},[e]),{filiais:i,loading:o,error:l}}export{f as u};
