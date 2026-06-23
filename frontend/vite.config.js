@@ -3,7 +3,11 @@ import react from "@vitejs/plugin-react";
 import Pages from "vite-plugin-pages";
 
 export default defineConfig({
+<<<<<<< HEAD
   base: "/compras/",
+=======
+  base: "/",
+>>>>>>> a407070151f2236f6c2396cb7b70326c51b418c0
   plugins: [
     react(),
     Pages({

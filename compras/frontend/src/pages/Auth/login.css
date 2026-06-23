@@ -1,0 +1,32 @@
+.login-page{
+    height: 100dvh;
+    background-color: #F8F9FA;
+    padding: 40px;
+}
+
+.login-card{
+    margin: auto;
+    text-align: center;
+    width: 32%;
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+    border: none;
+    border-radius: 0.25rem;
+}
+
+.card-header{
+    background-color: #FFF;
+}
+
+.card-body{
+    background-color: #FFF;
+}
+
+.logo-image{
+    height: 125px;
+    width: 125px;
+    aspect-ratio: 1;
+    background-color: none;
+    object-fit: contain;
+    object-position: center;
+    background-color: none;
+}

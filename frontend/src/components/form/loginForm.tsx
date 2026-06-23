@@ -53,7 +53,11 @@ export default function LoginForm({
     if (!credentials.matricula || !credentials.senha) return;
 
     try {
+<<<<<<< HEAD
       const response = await fetch("https://ffasip.ddns.net:4545/compras/backend/public/api/login", {
+=======
+      const response = await fetch("https://compras.painel-telecom.com/backend/public/api/login", {
+>>>>>>> a407070151f2236f6c2396cb7b70326c51b418c0
         method: "POST",
         headers: {
           "Content-Type": "application/json",
