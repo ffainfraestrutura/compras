@@ -1,9 +1,0 @@
-2026-02-23 14:27:09,873 - INFO - 🚀 INICIANDO PROCESSAMENTO COM DEBUG DETALHADO
-2026-02-23 14:27:09,873 - INFO - ================================================================================
-2026-02-23 14:27:09,873 - INFO - 📅 Data de processamento: 2026-02-22
-2026-02-23 14:27:09,878 - INFO - 🔗 Estabelecendo conexões...
-2026-02-23 14:27:09,905 - ERROR - ❌ Erro ao conectar localhost/bdpremiacao: Authentication plugin 'caching_sha2_password' is not supported
-2026-02-23 14:27:09,910 - ERROR - ❌ Erro ao conectar localhost/bdimport: Authentication plugin 'caching_sha2_password' is not supported
-2026-02-23 14:27:09,911 - ERROR - 💥 Falha nas conexões. Abortando processamento.
-2026-02-23 14:27:09,912 - INFO - 🏁 PROCESSAMENTO FINALIZADO
-2026-02-23 14:27:09,912 - INFO - ================================================================================
