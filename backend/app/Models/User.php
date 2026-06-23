@@ -8,7 +8,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 class User extends Authenticatable implements JWTSubject
 {
     protected $connection = 'mysql';
-    protected $table = 'bdfrota.tbusuario';
+    protected $table = 'bdcorp.tbusuario';
     protected $primaryKey = 'id_usuario';
     public $timestamps = false;
 

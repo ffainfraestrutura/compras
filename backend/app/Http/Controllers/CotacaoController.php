@@ -811,7 +811,7 @@ class CotacaoController extends Controller
             // --------------------------------------------------------------------
 
             // Buscar destinatários do nível calculado
-            $destinatarios = DB::table('bdfrota.tbusuario')
+            $destinatarios = DB::table('bdcorp.tbusuario')
                 ->where('compras', $nivelDestino)
                 ->whereNotNull('email')
                 ->where('email', '!=', '')

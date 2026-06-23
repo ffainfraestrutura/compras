@@ -16,8 +16,8 @@ class UserController extends Controller
                 f.nome AS nome,
                 f.ccusto AS ccusto,
                 u.compras
-            FROM bdffa.tbfuncionario f
-            LEFT JOIN bdfrota.tbusuario u 
+            FROM bdcorp.tbfuncionario f
+            LEFT JOIN bdcorp.tbusuario u 
                 ON f.matricula = u.matricula
             WHERE f.status = 'ATIVO'
             AND f.nome NOT LIKE 'TERC.%'

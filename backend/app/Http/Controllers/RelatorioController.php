@@ -11,22 +11,22 @@ class RelatorioController extends Controller
     private function baseQuery(): \Illuminate\Database\Query\Builder
     {
         return DB::connection('DBCompra')->table('tbsol_compra as sc')
-            ->join('bdffa.tbfuncionario as f',
+            ->join('bdcorp.tbfuncionario as f',
                 'sc.solicitante', '=', 'f.matricula')
 
-            ->leftJoin('bdffa.tbfuncionario as gerente',
+            ->leftJoin('bdcorp.tbfuncionario as gerente',
                 'sc.matricula_gerente', '=', 'gerente.matricula')
 
-            ->leftJoin('bdffa.tbfuncionario as material',
+            ->leftJoin('bdcorp.tbfuncionario as material',
                 'sc.matricula_material', '=', 'material.matricula')
 
-            ->leftJoin('bdffa.tbfuncionario as compras',
+            ->leftJoin('bdcorp.tbfuncionario as compras',
                 'sc.matricula_compra', '=', 'compras.matricula')
 
-            ->leftJoin('bdffa.tbfuncionario as diretor',
+            ->leftJoin('bdcorp.tbfuncionario as diretor',
                 'sc.matricula_diretor', '=', 'diretor.matricula')
 
-            ->leftJoin('bdffa.tbfilial as fil',
+            ->leftJoin('bdcorp.tbfilial as fil',
                 'sc.filial_id', '=', 'fil.idtbfilial')
 
             // Dois JOINs diretos no lugar do UNION ALL

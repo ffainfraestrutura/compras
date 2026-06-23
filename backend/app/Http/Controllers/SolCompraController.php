@@ -68,7 +68,7 @@ class SolCompraController extends Controller
             // Verifica se o solicitante está na tabela de aprovação
             $cadeia = DB::selectOne("
             SELECT * 
-            FROM bdffa.tbcadeia_aprovacao 
+            FROM bdcorp.tbcadeia_aprovacao 
             WHERE matricula = ?
         ", [$solicitacao->solicitante]);
 
@@ -85,7 +85,7 @@ class SolCompraController extends Controller
                 // CORREÇÃO: Usar json_encode para converter o valor em string JSON válida
                 $usuariosCompras = DB::select("
                 SELECT u.email, u.matricula, u.nome, gm.ids_gestao_material
-                FROM bdfrota.tbusuario u
+                FROM bdcorp.tbusuario u
                 JOIN bdcompra.tbgestores_material gm ON gm.matricula = u.matricula
                 WHERE u.compras = 2
                 AND JSON_CONTAINS(gm.ids_gestao_material, ?)
@@ -120,10 +120,10 @@ class SolCompraController extends Controller
                     u.nome as nome_solicitante,
                     ug.matricula as mat_gerente,
                     ug.nome as nome_gerente
-                FROM bdfrota.tbusuario u
-                LEFT JOIN bdfrota.tbcoord c ON c.matricula = u.matricula
-                LEFT JOIN bdfrota.tbgerente g ON g.idtbgerente = c.idtbgerente
-                LEFT JOIN bdfrota.tbusuario ug ON ug.matricula = g.matricula
+                FROM bdcorp.tbusuario u
+                LEFT JOIN bdcorp.tbcoord c ON c.matricula = u.matricula
+                LEFT JOIN bdcorp.tbgerente g ON g.idtbgerente = c.idtbgerente
+                LEFT JOIN bdcorp.tbusuario ug ON ug.matricula = g.matricula
                 WHERE u.matricula = ?
             ", [$solicitacao->solicitante]);
 
@@ -138,7 +138,7 @@ class SolCompraController extends Controller
                     // Busca um gestor de compras padrão como fallback
                     $gestorPadrao = DB::selectOne("
                     SELECT u.email 
-                    FROM bdfrota.tbusuario u
+                    FROM bdcorp.tbusuario u
                     JOIN bdcompra.tbgestores_material gm ON gm.matricula = u.matricula
                     WHERE u.compras = 2 
                     AND u.email IS NOT NULL
@@ -245,14 +245,14 @@ class SolCompraController extends Controller
 
                 // Consulta para usuários nível 2 e 3
                 $query = DB::connection('DBCompra')->table('tbsol_compra as sc')
-                    ->join('bdffa.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
+                    ->join('bdcorp.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
                     ->joinSub($materiaisUnion, 'm', function ($join) {
                         $join->on('sc.cod_material', '=', 'm.codmat');
                     })
                     ->join('tbgestao_material as gm', 'm.centrocusto', '=', 'gm.id')
                     // Joins para aprovações
-                    ->leftJoin('bdffa.tbfuncionario as fm', 'sc.matricula_material', '=', 'fm.matricula') // aprovações material
-                    ->leftJoin('bdffa.tbfuncionario as fc', 'sc.matricula_compra', '=', 'fc.matricula') // aprovações compra
+                    ->leftJoin('bdcorp.tbfuncionario as fm', 'sc.matricula_material', '=', 'fm.matricula') // aprovações material
+                    ->leftJoin('bdcorp.tbfuncionario as fc', 'sc.matricula_compra', '=', 'fc.matricula') // aprovações compra
                     ->leftJoin('bdcompra.tb_agrupamento_cotacoes as ac', 'ac.cod_cotacao_agrupada', '=', 'sc.cod_compra')
 
                     ->select(
@@ -391,12 +391,12 @@ class SolCompraController extends Controller
                         $join->on('sc.cod_cotacao', '=', 'mc.cod_cotacao')
                             ->on('sc.cod_material', '=', 'mc.cod_material');
                     })
-                    ->join('bdffa.tbfuncionario as f', 'f.matricula', '=', 'sc.solicitante')
+                    ->join('bdcorp.tbfuncionario as f', 'f.matricula', '=', 'sc.solicitante')
                     ->joinSub($valorTotalCotacao, 'voto', function ($join) {
                         $join->on('voto.cod_cotacao', '=', 'sc.cod_cotacao');
                     })
-                    ->leftJoin('bdffa.tbfuncionario as fm', 'sc.matricula_material', '=', 'fm.matricula')
-                    ->leftJoin('bdffa.tbfuncionario as fc', 'sc.matricula_compra', '=', 'fc.matricula')
+                    ->leftJoin('bdcorp.tbfuncionario as fm', 'sc.matricula_material', '=', 'fm.matricula')
+                    ->leftJoin('bdcorp.tbfuncionario as fc', 'sc.matricula_compra', '=', 'fc.matricula')
                     ->where('mc.status', 'Finalizado')
                     ->select(
                         DB::raw('DATE_FORMAT(MIN(sc.data_solicitacao), "%d/%m/%Y") as data_solicitacao'),
@@ -514,14 +514,14 @@ class SolCompraController extends Controller
 
                 // Consulta para usuários nível 2 e 3
                 $query = DB::connection('DBCompra')->table('tbsol_compra as sc')
-                    ->join('bdffa.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
+                    ->join('bdcorp.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
                     ->joinSub($materiaisUnion, 'm', function ($join) {
                         $join->on('sc.cod_material', '=', 'm.codmat');
                     })
                     ->join('tbgestao_material as gm', 'm.centrocusto', '=', 'gm.id')
                     // Joins para aprovações
-                    ->leftJoin('bdffa.tbfuncionario as fm', 'sc.matricula_material', '=', 'fm.matricula') // aprovações material
-                    ->leftJoin('bdffa.tbfuncionario as fc', 'sc.matricula_compra', '=', 'fc.matricula') // aprovações compra
+                    ->leftJoin('bdcorp.tbfuncionario as fm', 'sc.matricula_material', '=', 'fm.matricula') // aprovações material
+                    ->leftJoin('bdcorp.tbfuncionario as fc', 'sc.matricula_compra', '=', 'fc.matricula') // aprovações compra
 
                     ->select(
                         DB::raw('DATE_FORMAT(MIN(sc.data_solicitacao), "%d/%m/%Y") as data_solicitacao'),
@@ -683,15 +683,15 @@ class SolCompraController extends Controller
                         $join->on('mc.cod_cotacao', '=', 'sc.cod_cotacao')
                             ->on('mc.cod_material', '=', 'sc.cod_material');
                     })
-                    ->join('bdffa.tbfuncionario as f', 'f.matricula', '=', 'sc.solicitante')
+                    ->join('bdcorp.tbfuncionario as f', 'f.matricula', '=', 'sc.solicitante')
                     ->joinSub($totaisFornecedor, 'totais_fornecedor', function ($join) {
                         $join->on('totais_fornecedor.cod_cotacao', '=', 'mc.cod_cotacao');
                     })
                     ->joinSub($maioresCotacoes, 'maiores_cotacoes', function ($join) {
                         $join->on('maiores_cotacoes.cod_cotacao', '=', 'mc.cod_cotacao');
                     })
-                    ->leftJoin('bdffa.tbfuncionario as fm', 'sc.matricula_material', '=', 'fm.matricula')
-                    ->leftJoin('bdffa.tbfuncionario as fc', 'sc.matricula_compra', '=', 'fc.matricula')
+                    ->leftJoin('bdcorp.tbfuncionario as fm', 'sc.matricula_material', '=', 'fm.matricula')
+                    ->leftJoin('bdcorp.tbfuncionario as fc', 'sc.matricula_compra', '=', 'fc.matricula')
                     ->where('mc.status', 'Finalizado')
                     ->select(
                         DB::raw('DATE_FORMAT(MIN(sc.data_solicitacao), "%d/%m/%Y") as data_solicitacao'),
@@ -778,8 +778,8 @@ class SolCompraController extends Controller
 
             if (in_array($user->compras, [2, 3, 7])) {
                 $query = DB::connection('DBCompra')->table('tbsol_compra as sc')
-                    ->join('bdffa.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
-                    ->join('bdffa.tbfilial as fil', 'filial_id', '=', 'idtbfilial')
+                    ->join('bdcorp.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
+                    ->join('bdcorp.tbfilial as fil', 'filial_id', '=', 'idtbfilial')
                     ->joinSub($materiaisUnion, 'm', function ($join) {
                         $join->on('sc.cod_material', '=', 'm.codmat');
                     })
@@ -840,7 +840,7 @@ class SolCompraController extends Controller
 
             } elseif (in_array($user->compras, [4, 5, 6])) {
                 $query = DB::connection('DBCompra')->table('tbsol_compra as sc')
-                    ->join('bdffa.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
+                    ->join('bdcorp.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
                     ->joinSub($materiaisUnion, 'm', function ($join) {
                         $join->on('sc.cod_material', '=', 'm.codmat');
                     })
@@ -1040,7 +1040,7 @@ class SolCompraController extends Controller
         }
 
         // Busca gestores de material (nível 2) com base no centro de custo
-        $destinatarios = DB::table('bdfrota.tbusuario as u')
+        $destinatarios = DB::table('bdcorp.tbusuario as u')
             ->join('bdcompra.tbgestores_material as gm', 'gm.matricula', '=', 'u.matricula')
             ->where('u.compras', 2)
             ->whereNotNull('u.email')
@@ -1246,7 +1246,7 @@ class SolCompraController extends Controller
 
         switch ($user->compras) {
             case 2: // Aprovador de material -> próximo nível (compras)
-                $destinatarios = DB::table('bdfrota.tbusuario')
+                $destinatarios = DB::table('bdcorp.tbusuario')
                     ->where('compras', 3)
                     ->whereNotNull('email')
                     ->pluck('email')
@@ -1262,7 +1262,7 @@ class SolCompraController extends Controller
             case 4: // Diretor
             case 5:
             case 6: // Diretor aprova -> volta para compras (nível 3)
-                $destinatarios = DB::table('bdfrota.tbusuario')
+                $destinatarios = DB::table('bdcorp.tbusuario')
                     ->where('compras', 3)
                     ->whereNotNull('email')
                     ->pluck('email')
@@ -1285,7 +1285,7 @@ class SolCompraController extends Controller
                 }
 
                 // CORREÇÃO: Usar json_encode para passar o valor como string JSON válida
-                $destinatarios = DB::table('bdfrota.tbusuario as u')
+                $destinatarios = DB::table('bdcorp.tbusuario as u')
                     ->join('bdcompra.tbgestores_material as gm', 'gm.matricula', '=', 'u.matricula')
                     ->where('u.compras', 2)
                     ->whereNotNull('u.email')
@@ -1376,7 +1376,7 @@ class SolCompraController extends Controller
 
         // Consulta principal
         $query = DB::connection('DBCompra')->table('tbsol_compra as sc')
-            ->join('bdffa.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
+            ->join('bdcorp.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
             ->joinSub($materiaisUnion, 'm', function ($join) {
                 $join->on('sc.cod_material', '=', 'm.codmat');
             })
@@ -1854,8 +1854,8 @@ class SolCompraController extends Controller
             );
 
         $query = DB::connection('DBCompra')->table('tbsol_compra as sc')
-            ->join('bdffa.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
-            ->leftJoin('bdffa.tbfilial as fil', 'sc.filial_id', '=', 'fil.idtbfilial')
+            ->join('bdcorp.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
+            ->leftJoin('bdcorp.tbfilial as fil', 'sc.filial_id', '=', 'fil.idtbfilial')
             ->joinSub($materiaisUnion, 'm', function ($join) {
                 $join->on('sc.cod_material', '=', 'm.codmat');
             })
@@ -1993,7 +1993,7 @@ class SolCompraController extends Controller
             // Busca destinatários baseado no setor de destino (sem centro de custo)
             switch ($setorDestino) {
                 case 1: // Material (nível 2)
-                    $destinatarios = DB::table('bdfrota.tbusuario')
+                    $destinatarios = DB::table('bdcorp.tbusuario')
                         ->where('compras', 2)
                         ->whereNotNull('email')
                         ->pluck('email')
@@ -2001,7 +2001,7 @@ class SolCompraController extends Controller
                     break;
 
                 case 2: // Compra (nível 3)
-                    $destinatarios = DB::table('bdfrota.tbusuario')
+                    $destinatarios = DB::table('bdcorp.tbusuario')
                         ->where('compras', 3)
                         ->whereNotNull('email')
                         ->pluck('email')
@@ -2009,7 +2009,7 @@ class SolCompraController extends Controller
                     break;
 
                 case 3: // Diretor (níveis 4,5,6)
-                    $destinatarios = DB::table('bdfrota.tbusuario')
+                    $destinatarios = DB::table('bdcorp.tbusuario')
                         ->whereIn('compras', [4, 5, 6])
                         ->whereNotNull('email')
                         ->pluck('email')
@@ -2017,7 +2017,7 @@ class SolCompraController extends Controller
                     break;
 
                 case 4: // Gerente (nível 7)
-                    $destinatarios = DB::table('bdfrota.tbusuario')
+                    $destinatarios = DB::table('bdcorp.tbusuario')
                         ->where('compras', 7)
                         ->whereNotNull('email')
                         ->pluck('email')
@@ -2104,8 +2104,8 @@ class SolCompraController extends Controller
 
         $resultado = DB::connection('DBCompra')
             ->table('tbaux_retorno_processo as rp')
-            ->join('bdffa.tbfuncionario as fo', 'rp.matricula_origem', '=', 'fo.matricula')
-            ->leftJoin('bdffa.tbfuncionario as fd', 'rp.matricula_destino', '=', 'fd.matricula')
+            ->join('bdcorp.tbfuncionario as fo', 'rp.matricula_origem', '=', 'fo.matricula')
+            ->leftJoin('bdcorp.tbfuncionario as fd', 'rp.matricula_destino', '=', 'fd.matricula')
             ->select(
                 'rp.matricula_origem',
                 'rp.matricula_destino',
@@ -2197,7 +2197,7 @@ class SolCompraController extends Controller
                 ->get();
 
             // Busca email da pessoa que fez o retorno original (matricula_origem)
-            $usuarioOrigem = DB::table('bdfrota.tbusuario')
+            $usuarioOrigem = DB::table('bdcorp.tbusuario')
                 ->where('matricula', $retorno->matricula_origem)
                 ->whereNotNull('email')
                 ->first();
@@ -2336,7 +2336,7 @@ class SolCompraController extends Controller
         // --- Informações da Filial (SEMPRE PRIMEIRO) ---
         $dadosCompra = DB::connection('DBCompra')->table('tbsol_compra')->where('cod_compra', $cod_compra)->first();
         if ($dadosCompra && $dadosCompra->filial_id) {
-            $filial = DB::connection('DBCompra')->table('bdffa.tbfilial')->where('idtbfilial', $dadosCompra->filial_id)->first();
+            $filial = DB::connection('DBCompra')->table('bdcorp.tbfilial')->where('idtbfilial', $dadosCompra->filial_id)->first();
             $historyEvents[] = [
                 'tipo' => 'Filial',
                 'etapa' => 'Filial Responsável',
@@ -2447,7 +2447,7 @@ class SolCompraController extends Controller
 
         // --- Tradução de Matrículas para Nomes ---
         if (!empty($matriculasMap)) {
-            $usuarios = DB::connection('DBCompra')->table('bdfrota.tbusuario')
+            $usuarios = DB::connection('DBCompra')->table('bdcorp.tbusuario')
                 ->whereIn('matricula', array_keys($matriculasMap))
                 ->get()->keyBy('matricula');
 
@@ -2908,10 +2908,10 @@ class SolCompraController extends Controller
             );
 
         $query = DB::connection('DBCompra')->table('tbsol_compra as sc')
-            ->join('bdffa.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
+            ->join('bdcorp.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
             ->leftJoin('tbaux_retorno_processo as e', 'sc.cod_compra', '=', 'e.cod_compra')
             ->leftJoin('tb_agrupamento_cotacoes as ac', 'sc.cod_compra', '=', 'ac.cod_cotacao_agrupada')
-            ->leftJoin('bdffa.tbfilial as fil', 'sc.filial_id', '=', 'fil.idtbfilial')
+            ->leftJoin('bdcorp.tbfilial as fil', 'sc.filial_id', '=', 'fil.idtbfilial')
             ->joinSub($materiaisUnion, 'm', function ($join) {
                 $join->on('sc.cod_material', '=', 'm.codmat');
             })
@@ -2955,7 +2955,7 @@ class SolCompraController extends Controller
         }
 
         $query = DB::connection('DBCompra')->table('tbsol_compra as sc')
-            ->join('bdffa.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
+            ->join('bdcorp.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
             ->joinSub(
                 DB::connection('DBCompra')->table('tb_material as m1')
                     ->select('codmat', 'descricao', 'unid')
@@ -3028,7 +3028,7 @@ class SolCompraController extends Controller
         // 🔹 Monta a query principal
         $query = DB::connection('DBCompra')
             ->table('tbsol_compra as sc')
-            ->join('bdffa.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
+            ->join('bdcorp.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
             ->joinSub(
                 DB::table('tb_material as m1')->select('codmat', 'descricao', 'unid')
                     ->unionAll(
@@ -3100,7 +3100,7 @@ class SolCompraController extends Controller
         }
 
         $query = DB::connection('DBCompra')->table('tbsol_compra as sc')
-            ->join('bdffa.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
+            ->join('bdcorp.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
             ->leftJoin('tbmateriais_cotados as mc', function ($join) {
                 $join->on('sc.cod_cotacao', '=', 'mc.cod_cotacao')
                     ->where('mc.status', 'Aprovado');
@@ -3108,7 +3108,7 @@ class SolCompraController extends Controller
             ->leftJoin('tbfornecedor as forn', 'mc.fornecedor_id', '=', 'forn.id')
             ->leftJoin('tb_material as m', 'sc.cod_material', '=', 'm.codmat')
             ->leftJoin('tbmaterial_aniel as ma', 'sc.cod_material', '=', 'ma.codmat')
-            ->leftJoin('bdffa.tbfilial as fil', 'sc.filial_id', '=', 'fil.idtbfilial')
+            ->leftJoin('bdcorp.tbfilial as fil', 'sc.filial_id', '=', 'fil.idtbfilial')
             ->join('tbgestao_material as gm', DB::raw('COALESCE(m.centrocusto, ma.centrocusto)'), '=', 'gm.id')
             ->select(
                 DB::raw('DATE_FORMAT(MIN(sc.data_solicitacao), "%d/%m/%Y") as "Data da Solicitação"'),
@@ -3151,7 +3151,7 @@ class SolCompraController extends Controller
 
         // busca todas as solicitações com o cod_compra fornecido
         $query = \DB::connection('DBCompra')->table('tbsol_compra as sc')
-            ->join('bdffa.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
+            ->join('bdcorp.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
             ->joinSub(
                 \DB::connection('DBCompra')->table('tb_material as m1')->select('codmat', 'descricao', 'unid', 'centrocusto')
                     ->unionAll(
@@ -3386,13 +3386,13 @@ class SolCompraController extends Controller
         }
 
         $query = DB::connection('DBCompra')->table('tbsol_compra as sc')
-            ->join('bdffa.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
+            ->join('bdcorp.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
             ->join('tb_material as m', 'sc.cod_material', '=', 'm.codmat')
             ->join('tbgestao_material as gm', 'm.centrocusto', '=', 'gm.id')
-            ->leftJoin('bdffa.tbfuncionario as f_material', 'sc.matricula_material', '=', 'f_material.matricula')
-            ->leftJoin('bdffa.tbfuncionario as f_compra', 'sc.matricula_compra', '=', 'f_compra.matricula')
-            ->leftJoin('bdffa.tbfuncionario as f_diretor', 'sc.matricula_diretor', '=', 'f_diretor.matricula')
-            ->leftJoin('bdffa.tbfuncionario as f_finalizado', 'sc.matricula_finalizado', '=', 'f_finalizado.matricula')
+            ->leftJoin('bdcorp.tbfuncionario as f_material', 'sc.matricula_material', '=', 'f_material.matricula')
+            ->leftJoin('bdcorp.tbfuncionario as f_compra', 'sc.matricula_compra', '=', 'f_compra.matricula')
+            ->leftJoin('bdcorp.tbfuncionario as f_diretor', 'sc.matricula_diretor', '=', 'f_diretor.matricula')
+            ->leftJoin('bdcorp.tbfuncionario as f_finalizado', 'sc.matricula_finalizado', '=', 'f_finalizado.matricula')
             ->select(
                 DB::raw('DATE_FORMAT(MIN(sc.data_solicitacao), "%d/%m/%Y") as data_solicitacao'),
                 DB::raw('ANY_VALUE(sc.cod_compra) as cod_compra'),
@@ -3508,7 +3508,7 @@ class SolCompraController extends Controller
                     'nf.chave_acesso',
                     'nf.matricula'
                 )
-                ->join('bdffa.tbfuncionario as func', 'func.matricula', '=', 'nf.matricula')
+                ->join('bdcorp.tbfuncionario as func', 'func.matricula', '=', 'nf.matricula')
                 ->join('bdcompra.tbfornecedor as forn', 'forn.id', '=', 'nf.fornecedor_id')
                 ->orderBy('nf.created_at', 'desc');
             return response()->json([$solicitacoes], 200);
@@ -3535,9 +3535,9 @@ class SolCompraController extends Controller
             $columns_group = 'sc.cod_compra';
 
             // 🔹 Busca as matrículas dos coordenadores vinculados ao gerente logado
-            $matriculas_coordenadores = DB::connection('mysql')->table('bdfrota.tbusuario as u')
-                ->leftJoin('bdfrota.tbgerente as g', 'u.matricula', '=', 'g.matricula')
-                ->leftJoin('bdfrota.tbcoord as c', 'g.idtbgerente', '=', 'c.idtbgerente')
+            $matriculas_coordenadores = DB::connection('mysql')->table('bdcorp.tbusuario as u')
+                ->leftJoin('bdcorp.tbgerente as g', 'u.matricula', '=', 'g.matricula')
+                ->leftJoin('bdcorp.tbcoord as c', 'g.idtbgerente', '=', 'c.idtbgerente')
                 ->where('u.matricula', $user->matricula)
                 ->whereNotNull('c.matricula')
                 ->pluck('c.matricula')
@@ -3560,13 +3560,13 @@ class SolCompraController extends Controller
 
             // 🔹 Query principal filtrada pela hierarquia
             $query = DB::connection('DBCompra')->table('tbsol_compra as sc')
-                ->join('bdffa.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
+                ->join('bdcorp.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
                 ->joinSub($materiaisUnion, 'm', function ($join) {
                     $join->on('sc.cod_material', '=', 'm.codmat');
                 })
                 ->join('tbgestao_material as gm', 'm.centrocusto', '=', 'gm.id')
-                ->leftJoin('bdffa.tbfuncionario as fm', 'sc.matricula_material', '=', 'fm.matricula')
-                ->leftJoin('bdffa.tbfuncionario as fc', 'sc.matricula_compra', '=', 'fc.matricula')
+                ->leftJoin('bdcorp.tbfuncionario as fm', 'sc.matricula_material', '=', 'fm.matricula')
+                ->leftJoin('bdcorp.tbfuncionario as fc', 'sc.matricula_compra', '=', 'fc.matricula')
 
                 ->select(
                     DB::raw('DATE_FORMAT(MIN(sc.data_solicitacao), "%d/%m/%Y") as data_solicitacao'),
@@ -3701,12 +3701,12 @@ class SolCompraController extends Controller
 
             // Query principal nível 2
             $query = DB::connection('DBCompra')->table('tbsol_compra as sc')
-                ->join('bdffa.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
+                ->join('bdcorp.tbfuncionario as f', 'sc.solicitante', '=', 'f.matricula')
                 ->joinSub($materiaisUnion, 'm', function ($join) {
                     $join->on('sc.cod_material', '=', 'm.codmat');
                 })
-                ->leftJoin('bdffa.tbfuncionario as fg', 'sc.matricula_gerente', '=', 'fg.matricula')
-                ->leftJoin('bdffa.tbfuncionario as fc', 'sc.matricula_compra', '=', 'fc.matricula')
+                ->leftJoin('bdcorp.tbfuncionario as fg', 'sc.matricula_gerente', '=', 'fg.matricula')
+                ->leftJoin('bdcorp.tbfuncionario as fc', 'sc.matricula_compra', '=', 'fc.matricula')
                 ->leftJoin('bdcompra.tb_agrupamento_cotacoes as ac', 'ac.cod_cotacao_agrupada', '=', 'sc.cod_compra')
 
                 ->select(

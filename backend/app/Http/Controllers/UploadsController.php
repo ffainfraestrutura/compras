@@ -380,7 +380,7 @@ class UploadsController extends Controller
                 // Verifica se a filial existe
                 $filial = DB::connection('DBCompra')->selectOne("
                     SELECT idtbfilial, descricao 
-                    FROM bdffa.tbfilial 
+                    FROM bdcorp.tbfilial 
                     WHERE idtbfilial = ?
                 ", [$filialNome]);
 
@@ -754,7 +754,7 @@ class UploadsController extends Controller
 
             // Verifica se o solicitante está na tabela de aprovação
             $cadeia = DB::connection('DBCompra')->selectOne("
-                SELECT * FROM bdffa.tbcadeia_aprovacao 
+                SELECT * FROM bdcorp.tbcadeia_aprovacao 
                 WHERE matricula = ?
             ", [$solicitacao->solicitante]);
 
@@ -762,7 +762,7 @@ class UploadsController extends Controller
                 // Busca gestores
                 $usuariosCompras = DB::connection('DBCompra')->select("
                     SELECT u.email, u.matricula
-                    FROM bdfrota.tbusuario u
+                    FROM bdcorp.tbusuario u
                     JOIN bdcompra.tbgestores_material gm ON gm.matricula = u.matricula
                     WHERE u.compras = 2
                     AND JSON_CONTAINS(gm.ids_gestao_material, ?)
@@ -777,10 +777,10 @@ class UploadsController extends Controller
                 // Busca gerente
                 $gerente = DB::connection('DBCompra')->selectOne("
                     SELECT ug.email AS email_gerente
-                    FROM bdfrota.tbusuario u
-                    LEFT JOIN bdfrota.tbcoord c ON c.matricula = u.matricula
-                    LEFT JOIN bdfrota.tbgerente g ON g.idtbgerente = c.idtbgerente
-                    LEFT JOIN bdfrota.tbusuario ug ON ug.matricula = g.matricula
+                    FROM bdcorp.tbusuario u
+                    LEFT JOIN bdcorp.tbcoord c ON c.matricula = u.matricula
+                    LEFT JOIN bdcorp.tbgerente g ON g.idtbgerente = c.idtbgerente
+                    LEFT JOIN bdcorp.tbusuario ug ON ug.matricula = g.matricula
                     WHERE u.matricula = ?
                 ", [$solicitacao->solicitante]);
 

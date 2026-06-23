@@ -18,7 +18,7 @@ class RegisterController extends Controller
             return response()->json(['message' => 'Erro na criação: matrícula ou senha vazia'], 400);
         }
 
-        $usuarioExistente = DB::table('bdfrota.tbusuario')
+        $usuarioExistente = DB::table('bdcorp.tbusuario')
             ->where('matricula', $request->matricula)
             ->exists();
 
@@ -27,17 +27,17 @@ class RegisterController extends Controller
         }
 
         // Obtem a matricula do supervisor
-        $request->matriculasup = DB::table('bdfrota.tbtecnico')
+        $request->matriculasup = DB::table('bdcorp.tbtecnico')
             ->where('matricula', $request->matricula)
             ->value('matriculasup');
 
         // Obtem o ID do supervisor
-        $idtbsupervisor = DB::table('bdfrota.tbsupervisor')
+        $idtbsupervisor = DB::table('bdcorp.tbsupervisor')
             ->where('matricula', $request->matriculasup)
             ->value('idtbsupervisor');
 
         // Dados do funcionário
-        $funcionario = DB::table('bdffa.tbfuncionario')
+        $funcionario = DB::table('bdcorp.tbfuncionario')
             ->select('nome', 'codempresa', 'codfilial')
             ->where('matricula', $request->matricula)
             ->first();
@@ -56,16 +56,16 @@ class RegisterController extends Controller
         // Define o perfil
         $perfil = 0;
 
-        if (DB::table('bdfrota.tbsupervisor')->where('matricula', $request->matricula)->exists()) {
+        if (DB::table('bdcorp.tbsupervisor')->where('matricula', $request->matricula)->exists()) {
             $perfil = 1;
         }
 
-        if (DB::table('bdfrota.tbcoord')->where('matricula', $request->matricula)->exists()) {
+        if (DB::table('bdcorp.tbcoord')->where('matricula', $request->matricula)->exists()) {
             $perfil = 2;
         }
 
         // Cria o usuário
-        DB::table('bdfrota.tbusuario')->insert([
+        DB::table('bdcorp.tbusuario')->insert([
             'matricula' => $request->matricula,
             'usuario' => $request->matricula,
             'senha' => $request->password, // OU Hash::make($request->password) se quiser proteger

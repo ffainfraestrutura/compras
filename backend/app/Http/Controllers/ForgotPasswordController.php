@@ -26,7 +26,7 @@ class ForgotPasswordController extends Controller
         }
 
         // Verifica se o CPF confere com o do funcionário
-        $cpfValido = \DB::table('bdffa.tbfuncionario')
+        $cpfValido = \DB::table('bdcorp.tbfuncionario')
             ->where('matricula', $request->matricula)
             ->where('cpf', $request->cpf)
             ->exists();

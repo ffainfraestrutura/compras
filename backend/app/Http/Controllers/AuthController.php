@@ -17,7 +17,7 @@ class AuthController extends Controller
         $start = microtime(true);
 
         $user = User::where('usuario', $request->usuario)
-            ->leftJoin('bdffa.tbfuncionario as f', 'tbusuario.matricula', '=', 'f.matricula')
+            ->leftJoin('bdcorp.tbfuncionario as f', 'tbusuario.matricula', '=', 'f.matricula')
             ->leftJoin('bdcompra.tbgestores_material as gm', 'gm.matricula', '=', 'f.matricula')
             ->select('tbusuario.*', 'f.*', 'gm.matricula as is_gestor_material')
             ->first();

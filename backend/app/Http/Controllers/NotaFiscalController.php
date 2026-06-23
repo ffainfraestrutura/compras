@@ -30,7 +30,7 @@ class NotaFiscalController extends Controller
                     'nf.obs',
                     'nf.id'
                 )
-                ->join('bdffa.tbfuncionario as func', 'func.matricula', '=', 'nf.matricula')
+                ->join('bdcorp.tbfuncionario as func', 'func.matricula', '=', 'nf.matricula')
                 ->join('bdcompra.tbfornecedor as forn', 'forn.id', '=', 'nf.fornecedor_id')
                 ->orderBy('nf.created_at', 'desc');
 
