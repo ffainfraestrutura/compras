@@ -1,5 +1,1 @@
-<<<<<<< HEAD
-import{r as a,a as f}from"./index.js";function m(e=null){const[c,s]=a.useState([]),[n,r]=a.useState(!1),[l,o]=a.useState(!1),i="https://ffasip.ddns.net:4545/compras/backend/public/api/materiais";return a.useEffect(()=>{(async()=>{r(!0),o(!1);try{const t=localStorage.getItem("token"),u=await f.get(i,{params:{gestaoDescricao:e},headers:{Authorization:`Bearer ${t}`}});s(u.data)}catch(t){console.error("Erro ao buscar materiais:",t),o(!0)}finally{r(!1)}})()},[i,e]),{dataMaterials:c,setDataMaterials:s,loading:n,error:l}}export{m as u};
-=======
 import{r as a,a as f}from"./index.js";function d(t=null){const[i,s]=a.useState([]),[n,r]=a.useState(!1),[l,o]=a.useState(!1),c="https://compras.painel-telecom.com/backend/public/api/materiais";return a.useEffect(()=>{(async()=>{r(!0),o(!1);try{const e=localStorage.getItem("token"),u=await f.get(c,{params:{gestaoDescricao:t},headers:{Authorization:`Bearer ${e}`}});s(u.data)}catch(e){console.error("Erro ao buscar materiais:",e),o(!0)}finally{r(!1)}})()},[c,t]),{dataMaterials:i,setDataMaterials:s,loading:n,error:l}}export{d as u};
->>>>>>> a407070151f2236f6c2396cb7b70326c51b418c0
