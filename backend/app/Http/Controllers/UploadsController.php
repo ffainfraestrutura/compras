@@ -954,7 +954,7 @@ class UploadsController extends Controller
 
             // Caminho completo do arquivo
             $caminhoCompleto = "documentos_compras/{$codCompra}/{$nomeArquivo}";
-            $tamanhoArquivo = $file->getSize();
+            // $tamanhoArquivo = $file->getSize();
 
             // Mover arquivo para a pasta
             $file->move($pasta, $nomeArquivo);
@@ -971,7 +971,7 @@ class UploadsController extends Controller
                 'nome_arquivo' => $nomeArquivo,
                 'nome_hash' => $nomeHash,
                 'caminho' => $caminhoCompleto,
-                'tamanho' => $tamanhoArquivo,
+                'tamanho' => 0,
                 'extensao' => $extensao,
                 'ordem' => $ordem,
                 'matricula_upload' => $matricula,
