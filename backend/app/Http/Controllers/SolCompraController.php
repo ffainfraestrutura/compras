@@ -44,60 +44,69 @@ class SolCompraController extends Controller
 
             $solicitacao = SolCompraModel::create($data);
 
-            \Log::info('=== NOVA SOLICITAÇÃO ===');
-            \Log::info('Solicitação criada:', ['id' => $solicitacao->id, 'solicitante' => $solicitacao->solicitante]);
-
-            // Busca o centro de custo do material
             $centroCustoAlvo = 3; // valor padrão
             $materialInfo = DB::selectOne("
-            SELECT centrocusto, descricao 
-            FROM bdcompra.tb_material 
-            WHERE codmat = ?
-        ", [$request->cod_material]);
-
-            \Log::info('Material info:', ['cod_material' => $request->cod_material, 'materialInfo' => $materialInfo]);
+                SELECT centrocusto, descricao 
+                FROM bdcompra.tb_material 
+                WHERE codmat = ?
+            ", [$request->cod_material]);
 
             if ($materialInfo && isset($materialInfo->centrocusto) && !empty($materialInfo->centrocusto)) {
                 $centroCustoAlvo = $materialInfo->centrocusto;
             }
 
-            \Log::info('Centro de custo alvo:', ['centroCusto' => $centroCustoAlvo]);
-
             $emails = [];
+            $aceiteGerente = 0;
 
-            // Verifica se o solicitante está na tabela de aprovação
-            $cadeia = DB::selectOne("
-            SELECT * 
-            FROM bdcorp.tbcadeia_aprovacao 
-            WHERE matricula = ?
-        ", [$solicitacao->solicitante]);
-
-            \Log::info('Verificação cadeia:', [
-                'solicitante' => $solicitacao->solicitante,
-                'esta_na_cadeia' => $cadeia ? 'sim' : 'não',
-                'cadeia_data' => $cadeia
-            ]);
-
-            if ($cadeia) {
-                // CASO 1: Usuário está na tabela de aprovação
-                \Log::info('CASO 1: Usuário está na cadeia - Buscando gestores para centro de custo: ' . $centroCustoAlvo);
-
-                // CORREÇÃO: Usar json_encode para converter o valor em string JSON válida
-                $usuariosCompras = DB::select("
-                SELECT u.email, u.matricula, u.nome, gm.ids_gestao_material
+            // CORREÇÃO: Verifica a hierarquia do solicitante
+            $cargoSolicitante = DB::selectOne("
+                SELECT 
+                    u.matricula,
+                    u.nome,
+                    u.email,
+                    CASE 
+                        WHEN g.matricula IS NOT NULL THEN 1
+                        WHEN d.matricula IS NOT NULL THEN 1
+                        WHEN cl.matricula IS NOT NULL THEN 1
+                        ELSE 0
+                    END AS tem_cargo_superior,
+                    CASE 
+                        WHEN g.matricula IS NOT NULL THEN 'gerente'
+                        WHEN d.matricula IS NOT NULL THEN 'diretor'
+                        WHEN cl.matricula IS NOT NULL THEN 'c_level'
+                        ELSE 'sem_cargo_superior'
+                    END AS cargo_atual,
+                    g.idtbgerente,
+                    d.id,
+                    cl.id
                 FROM bdcorp.tbusuario u
-                JOIN bdcompra.tbgestores_material gm ON gm.matricula = u.matricula
-                WHERE u.compras = 2
-                AND JSON_CONTAINS(gm.ids_gestao_material, ?)
-            ", [json_encode($centroCustoAlvo)]); // <=== CORREÇÃO AQUI
+                LEFT JOIN bdcorp.tbgerente g ON g.matricula = u.matricula
+                LEFT JOIN bdcorp.tbdiretor d ON d.matricula = u.matricula
+                LEFT JOIN bdcorp.tbc_level cl ON cl.matricula = u.matricula
+                WHERE u.matricula = ?
+            ", [$solicitacao->solicitante]);
 
-                \Log::info('Gestores encontrados para centro de custo ' . $centroCustoAlvo . ':', [
-                    'quantidade' => count($usuariosCompras),
-                    'dados' => $usuariosCompras
+            \Log::info('Cargo do solicitante:', ['cargo' => $cargoSolicitante]);
+
+            // Verifica se o solicitante tem cargo de gerente ou superior
+            if ($cargoSolicitante && $cargoSolicitante->tem_cargo_superior == 1) {
+                // Se for gerente, diretor ou C-level, define aceite_gerente = 1
+                $aceiteGerente = 1;
+                \Log::info('Solicitante tem cargo superior, aceite_gerente = 1', [
+                    'matricula' => $solicitacao->solicitante,
+                    'cargo' => $cargoSolicitante->cargo_atual
                 ]);
 
+                // Busca os gestores de compras para o centro de custo específico
+                $usuariosCompras = DB::select("
+                    SELECT u.email, u.matricula, u.nome, gm.ids_gestao_material
+                    FROM bdcorp.tbusuario u
+                    JOIN bdcompra.tbgestores_material gm ON gm.matricula = u.matricula
+                    WHERE u.compras = 2
+                    AND JSON_CONTAINS(gm.ids_gestao_material, ?)
+                ", [json_encode($centroCustoAlvo)]);
+
                 foreach ($usuariosCompras as $usuario) {
-                    // Verifica se tem email e se não é o próprio solicitante
                     if (!empty($usuario->email) && $usuario->matricula != $solicitacao->solicitante) {
                         $emails[] = $usuario->email;
                         \Log::info('Email adicionado:', ['email' => $usuario->email, 'matricula' => $usuario->matricula]);
@@ -109,41 +118,41 @@ class SolCompraController extends Controller
                 }
 
             } else {
-                // CASO 2: Usuário NÃO está na tabela de aprovação
-                \Log::info('CASO 2: Usuário NÃO está na cadeia - Buscando gerente para: ' . $solicitacao->solicitante);
+                // Solicitante NÃO tem cargo superior
+                $aceiteGerente = NULL;
 
-                // Busca APENAS o gerente do solicitante
-                $gerente = DB::selectOne("
-                SELECT 
-                    ug.email AS email_gerente,
-                    u.matricula as mat_solicitante,
-                    u.nome as nome_solicitante,
-                    ug.matricula as mat_gerente,
-                    ug.nome as nome_gerente
-                FROM bdcorp.tbusuario u
-                LEFT JOIN bdcorp.tbcoord c ON c.matricula = u.matricula
-                LEFT JOIN bdcorp.tbgerente g ON g.idtbgerente = c.idtbgerente
-                LEFT JOIN bdcorp.tbusuario ug ON ug.matricula = g.matricula
-                WHERE u.matricula = ?
-            ", [$solicitacao->solicitante]);
+                // Busca o coordenador/gerente do solicitante através da hierarquia
+                $superior = DB::selectOne("
+                    SELECT 
+                        ug.email AS email_superior,
+                        u.matricula as mat_solicitante,
+                        u.nome as nome_solicitante,
+                        ug.matricula as mat_superior,
+                        ug.nome as nome_superior,
+                        c.idtbcoordenador,
+                        g.idtbgerente
+                    FROM bdcorp.tbusuario u
+                    LEFT JOIN bdcorp.tbcoord c ON c.matricula = u.matricula
+                    LEFT JOIN bdcorp.tbgerente g ON g.idtbgerente = c.idtbgerente
+                    LEFT JOIN bdcorp.tbusuario ug ON ug.matricula = g.matricula
+                    WHERE u.matricula = ?
+                ", [$solicitacao->solicitante]);
 
-                \Log::info('Gerente encontrado:', ['gerente' => $gerente]);
+                \Log::info('Superior do solicitante:', ['superior' => $superior]);
 
-                if ($gerente && !empty($gerente->email_gerente)) {
-                    $emails[] = $gerente->email_gerente;
-                    \Log::info('Email do gerente adicionado:', ['email' => $gerente->email_gerente, 'gerente' => $gerente->nome_gerente]);
+                if ($superior && !empty($superior->email_superior)) {
+                    $emails[] = $superior->email_superior;
+                    \Log::info('Superior encontrado e adicionado:', ['email' => $superior->email_superior]);
                 } else {
-                    \Log::warning('Gerente não encontrado ou sem email para o solicitante: ' . $solicitacao->solicitante);
-
                     // Busca um gestor de compras padrão como fallback
                     $gestorPadrao = DB::selectOne("
-                    SELECT u.email 
-                    FROM bdcorp.tbusuario u
-                    JOIN bdcompra.tbgestores_material gm ON gm.matricula = u.matricula
-                    WHERE u.compras = 2 
-                    AND u.email IS NOT NULL
-                    LIMIT 1
-                ");
+                        SELECT u.email 
+                        FROM bdcorp.tbusuario u
+                        JOIN bdcompra.tbgestores_material gm ON gm.matricula = u.matricula
+                        WHERE u.compras = 2 
+                        AND u.email IS NOT NULL
+                        LIMIT 1
+                    ");
 
                     if ($gestorPadrao && !empty($gestorPadrao->email)) {
                         $emails[] = $gestorPadrao->email;
@@ -152,37 +161,20 @@ class SolCompraController extends Controller
                 }
             }
 
-            \Log::info('Total de emails coletados:', ['quantidade' => count($emails), 'emails' => $emails]);
-
             // Remove duplicatas
             $listaEmailsUnicos = array_values(array_unique($emails));
 
-            \Log::info('Emails únicos finais:', ['quantidade' => count($listaEmailsUnicos), 'emails' => $listaEmailsUnicos]);
-
-            // if (!empty($listaEmailsUnicos)) {
-            //     \Log::info('Tentando enviar emails para: ' . implode(', ', $listaEmailsUnicos));
-
-            //     try {
-            //         Mail::to($listaEmailsUnicos)->send(new NovaSolicitacaoMail($solicitacao));
-            //         \Log::info('EMAIL ENVIADO COM SUCESSO para: ' . implode(', ', $listaEmailsUnicos));
-
-            //     } catch (\Exception $mailException) {
-            //         \Log::error('Erro ao enviar email:', [
-            //             'error' => $mailException->getMessage(),
-            //             'trace' => $mailException->getTraceAsString(),
-            //             'emails' => $listaEmailsUnicos
-            //         ]);
-            //     }
-            // } else {
-            //     \Log::warning('NENHUM EMAIL ENCONTRADO PARA NOTIFICAÇÃO');
-            // }
+            // Atualiza a solicitação com o valor do aceite_gerente
+            $solicitacao->update(['aceite_gerente' => $aceiteGerente, 'matricula_gerente' => $solicitacao->solicitante, 'justificativa_gerente' => 'Aprovado automaticamente pelo sistema']);
 
             return response()->json([
                 'status' => 'sucesso',
                 'solicitacao_criada' => $solicitacao,
                 'debug' => [
                     'centro_custo' => $centroCustoAlvo,
-                    'esta_na_cadeia' => $cadeia ? 'sim' : 'não',
+                    'cargo_solicitante' => $cargoSolicitante ? $cargoSolicitante->cargo_atual : 'sem_cargo',
+                    'tem_cargo_superior' => $cargoSolicitante ? $cargoSolicitante->tem_cargo_superior : 0,
+                    'aceite_gerente' => $aceiteGerente,
                     'material' => $materialInfo,
                     'emails_encontrados' => $emails,
                     'emails_unicos' => $listaEmailsUnicos
@@ -190,11 +182,6 @@ class SolCompraController extends Controller
             ], 201);
 
         } catch (Exception $e) {
-            \Log::error('Erro geral no processo:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
             return response()->json([
                 'error' => 'Erro ao criar solicitação.',
                 'message' => $e->getMessage()
@@ -1576,11 +1563,15 @@ class SolCompraController extends Controller
             ], 500);
         }
     }
+
     public function destroy_item(Request $request, $id)
     {
         $token = $request->header('Authorization');
+
         if (!$token) {
-            return response()->json(['error' => 'Token não fornecido'], 401);
+            return response()->json([
+                'error' => 'Token não fornecido'
+            ], 401);
         }
 
         $request->validate([
@@ -1596,10 +1587,22 @@ class SolCompraController extends Controller
 
             if (!$solicitacao) {
                 DB::rollBack();
-                return response()->json(['error' => 'Item não encontrado'], 404);
+
+                return response()->json([
+                    'error' => 'Item não encontrado'
+                ], 404);
             }
 
-            // Deleta o item
+            // Salva histórico da remoção
+            DB::table('bdcompra.tbaux_remocao_material')->insert([
+                'cod_compra' => $solicitacao->cod_compra,
+                'cod_material' => $solicitacao->cod_material,
+                'justificativa_remocao' => $request->justificativa_remocao,
+                'matricula' => $user->matricula ?? null,
+                'data' => now(),
+            ]);
+
+            // Remove o item
             $solicitacao->delete();
 
             DB::commit();
@@ -1610,6 +1613,7 @@ class SolCompraController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             \Log::error('Erro ao remover item: ' . $e->getMessage());
 
             return response()->json([

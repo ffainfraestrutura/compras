@@ -23,12 +23,13 @@ function Index() {
   const { openModal, closeModal } = useModal();
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const gestaoSelecionada = ""
   const {
     dataMaterials,
     setDataMaterials,
     loading: loadingMateriais,
     error,
-  } = useMateriais();
+  } = useMateriais(gestaoSelecionada);
   const dataWithActions = dataMaterials.map((item) => ({
     ...item,
     Ações: (

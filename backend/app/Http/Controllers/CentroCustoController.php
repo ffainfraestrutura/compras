@@ -23,6 +23,7 @@ class CentroCustoController extends Controller
 
         $centro_custo = CentroCustoModel::SELECT(
             'id',
+            'codigo_gestao',
             'descricao',
             'status',
         )->get();

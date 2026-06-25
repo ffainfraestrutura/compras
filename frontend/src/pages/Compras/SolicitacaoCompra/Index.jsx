@@ -21,7 +21,6 @@ import axios from "axios";
 import CustomSnackbar from "../../../components/SnackBar/SnackBar";
 import DetailsDrawer from "../../../components/Drawer/Drawer";
 import useMateriais from "../../../hooks/useMateriais";
-import useSolicitacoes from "../../../hooks/useSolicitacoes";
 import DataGridData from "../../../components/DataGrid/DataGrid";
 import useFiliais from "../../../hooks/useFiliais";
 import useCcustos from "../../../hooks/useCcusto";
@@ -33,7 +32,7 @@ import InstrucoesModal from "../../../components/instrucoesModal/instrucoesModal
 export default function Index() {
   const [open, setOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "" });
-  const [gestaoSelecionada, setGestaoSelecionada] = useState("");
+  const [gestaoSelecionada, setGestaoSelecionada] = useState(null);
   const [quantidades, setQuantidades] = useState({});
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
 
@@ -56,14 +55,120 @@ export default function Index() {
     refreshMaterials,
   } = useMateriais(gestaoSelecionada);
 
-  const {
-    dataSolicitacao,
-    setDataSolicitacao,
-    handleUpdateItem,
-    handleRemoveItem,
-    enviarSolicitacoes,
-    loading: loadingSolicitacao,
-  } = useSolicitacoes();
+  const [dataSolicitacao, setDataSolicitacao] = useState([]);
+  const [loadingSolicitacao, setLoadingSolicitacao] = useState(false);
+
+  const handleUpdateItem = (updatedItem) => {
+    setDataSolicitacao((prev) =>
+      prev.map((item) =>
+        item.id === updatedItem.id ? updatedItem : item
+      )
+    );
+  };
+
+  const handleRemoveItem = (itemToRemove) => {
+    setDataSolicitacao((prev) =>
+      prev.filter((item) => item.id !== itemToRemove.id)
+    );
+  };
+
+  const enviarSolicitacoes = async (
+    justificativa,
+    filial,
+    ccusto,
+    arquivos = [],
+    onSuccess,
+    onError
+  ) => {
+    if (!filial) {
+      onError?.("Selecione uma filial para compra");
+      return;
+    }
+
+    setLoadingSolicitacao(true);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const codCompra = Math.floor(Date.now() / 1000)
+        .toString(36)
+        .toUpperCase();
+
+      // Salva itens
+      for (const item of dataSolicitacao) {
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/solcompra`,
+          {
+            cod_material: item["CodMaterial"],
+            solicitante: localStorage.getItem("matricula"),
+            quantidade: item.quantidade,
+            cod_compra: codCompra,
+            ccusto: ccusto.descricao,
+            justificativa_solicitante: justificativa,
+            filial_id: filial.idtbfilial,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      }
+
+      // Upload dos anexos
+      const listaArquivos = Array.from(arquivos ?? []).filter(
+        (f) => f instanceof File
+      );
+
+      if (listaArquivos.length > 0) {
+        const formData = new FormData();
+
+        formData.append("cod_compra", codCompra);
+
+        listaArquivos.forEach((file) => {
+          formData.append("files[]", file, file.name);
+        });
+
+        const uploadRes = await axios.post(
+          `${import.meta.env.VITE_API_URL}/uploads/multiplo`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!uploadRes.data?.success) {
+          onSuccess?.({
+            aviso:
+              "Solicitação enviada, mas houve falha em alguns anexos.",
+          });
+          return;
+        }
+      }
+
+      setDataSolicitacao([]);
+
+      onSuccess?.();
+    } catch (err) {
+      console.error(err);
+
+      const mensagem =
+        err?.response?.data?.message ||
+        err?.response?.data?.errors ||
+        "Erro ao enviar solicitações";
+
+      onError?.(
+        Array.isArray(mensagem)
+          ? mensagem.join("; ")
+          : mensagem
+      );
+    } finally {
+      setLoadingSolicitacao(false);
+    }
+  };
+
 
   // Função para baixar a planilha modelo (direto pelo front-end)
   const downloadModel = () => {
@@ -84,6 +189,7 @@ export default function Index() {
       { wch: 20 }, // Coluna Filial
       { wch: 50 }  // Coluna Justificativa
     ];
+
 
     // Criar um workbook
     const wb = XLSX.utils.book_new();
@@ -216,6 +322,7 @@ export default function Index() {
     console.error('Erro no upload:', error);
     showSnackbar('Erro ao importar arquivo. Verifique o formato e tente novamente.');
   };
+  console.log(dataMaterials)
 
   const dataWithQuantity = dataMaterials.map((item) => {
     const itemSolicitacao = dataSolicitacao.find((s) => s.id === item.id);

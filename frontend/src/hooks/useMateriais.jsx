@@ -8,12 +8,17 @@ export default function useMateriais(gestaoMaterial = null) {
   const URL_API = import.meta.env.VITE_API_URL + "/materiais";
 
   useEffect(() => {
+    if (gestaoMaterial === null || gestaoMaterial === undefined) {
+      setDataMaterials([]);
+      setLoading(false);
+      return;
+    }
     const fetchMateriais = async () => {
       setLoading(true);
       setError(false);
 
       try {
-        const token = localStorage.getItem("token"); 
+        const token = localStorage.getItem("token");
 
         const response = await axios.get(URL_API, {
           params: { gestaoDescricao: gestaoMaterial },
@@ -32,7 +37,7 @@ export default function useMateriais(gestaoMaterial = null) {
     };
 
     fetchMateriais();
-  }, [URL_API, gestaoMaterial]);
+  }, [gestaoMaterial]);
 
   return { dataMaterials, setDataMaterials, loading, error };
 }

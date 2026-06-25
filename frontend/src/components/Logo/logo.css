@@ -13,3 +13,10 @@
     object-fit: contain;
     object-position: center;
 }
+
+.img-hallen {
+    height: 100%;
+    aspect-ratio: 2;
+    object-fit: contain;
+    object-position: center;
+}

@@ -674,6 +674,7 @@ export default function Index() {
                     variant="contained"
                     color="error"
                     size="small"
+                    disabled={localData.length <= 1} // ← adiciona isso
                     onClick={() => openRemoveModal(params.row)}
                 >
                     <FiX style={{ marginRight: 4 }} /> Remover

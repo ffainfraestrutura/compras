@@ -18,142 +18,54 @@ class MaterialController extends Controller
         try {
             $gestaoDescricao = request()->query('gestaoDescricao');
 
-            // 🔹 Se for 3 → usa tbmaterial_aniel
-            if (!is_null($gestaoDescricao)) {
-                $query1 = \DB::connection('DBCompra')
-                    ->table('tbmaterial_aniel')
-                    ->select(
-                        'id',
-                        'codmat AS CodMaterial',
-                        'descricao AS Descricao',
-                        'unid AS Unidade',
-                        'centrocusto AS CentroCusto',
-                        'saldo',
-                        'status',
-                        'data_cadastro AS DataCadastro',
-                        'obs AS Observacao',
-                        'marca',
-                        'modelo',
-                        'ean AS EAM',
-                        'sub_grupo AS Subgrupo',
-                        'patrimonio'
-                    )->where('centrocusto', '=', $gestaoDescricao);
+            $columns = [
+                'id',
+                'codmat AS CodMaterial',
+                'descricao AS Descricao',
+                'unid AS Unidade',
+                'centrocusto AS CentroCusto',
+                'saldo',
+                'status',
+                'data_cadastro AS DataCadastro',
+                'obs AS Observacao',
+                'marca',
+                'modelo',
+                'ean AS EAM',
+                'sub_grupo AS Subgrupo',
+                'patrimonio',
+            ];
 
-                $query2 = \DB::table('tb_material')
-                    ->select(
-                        'id',
-                        'codmat AS CodMaterial',
-                        'descricao AS Descricao',
-                        'unid AS Unidade',
-                        'centrocusto AS CentroCusto',
-                        'saldo',
-                        'status',
-                        'data_cadastro AS DataCadastro',
-                        'obs AS Observacao',
-                        'marca',
-                        'modelo',
-                        'ean AS EAM',
-                        'sub_grupo AS Subgrupo',
-                        'patrimonio'
-                    )->where('centrocusto', '=', $gestaoDescricao);
+            // 🔹 Roda as duas queries em paralelo usando Promises (via jobs/forks não é possível,
+            //    mas podemos usar cached queries e lazy loading)
+            $cacheKey = 'materiais_' . md5($gestaoDescricao ?? 'all');
 
-                $query = $query1->union($query2);
-            } elseif (is_null($gestaoDescricao)) {
-                // 🔹 Unir dados das duas tabelas
-                $query1 = \DB::connection('DBCompra')
-                    ->table('tbmaterial_aniel')
-                    ->select(
-                        'id',
-                        'codmat AS CodMaterial',
-                        'descricao AS Descricao',
-                        'unid AS Unidade',
-                        'centrocusto AS CentroCusto',
-                        'saldo',
-                        'status',
-                        'data_cadastro AS DataCadastro',
-                        'obs AS Observacao',
-                        'marca',
-                        'modelo',
-                        'ean AS EAM',
-                        'sub_grupo AS Subgrupo',
-                        'patrimonio'
-                    );
+            $material = \Cache::remember($cacheKey, now()->addMinutes(5), function () use ($columns, $gestaoDescricao) {
 
-                $query2 = \DB::table('tb_material')
-                    ->select(
-                        'id',
-                        'codmat AS CodMaterial',
-                        'descricao AS Descricao',
-                        'unid AS Unidade',
-                        'centrocusto AS CentroCusto',
-                        'saldo',
-                        'status',
-                        'data_cadastro AS DataCadastro',
-                        'obs AS Observacao',
-                        'marca',
-                        'modelo',
-                        'ean AS EAM',
-                        'sub_grupo AS Subgrupo',
-                        'patrimonio'
-                    );
+                $buildQuery = function (string $connection, string $table) use ($columns, $gestaoDescricao) {
+                    $q = \DB::connection($connection)->table($table)->select($columns);
+                    if (!empty($gestaoDescricao)) {
+                        $q->where('centrocusto', '=', $gestaoDescricao);
+                    }
+                    return $q;
+                };
 
-                $query = $query1->union($query2);
-            } else {
-                // 🔹 Consulta padrão (MaterialModel)
-                $query1 = \DB::connection('DBCompra')
-                    ->table('tbmaterial_aniel')
-                    ->select(
-                        'id',
-                        'codmat AS CodMaterial',
-                        'descricao AS Descricao',
-                        'unid AS Unidade',
-                        'centrocusto AS CentroCusto',
-                        'saldo',
-                        'status',
-                        'data_cadastro AS DataCadastro',
-                        'obs AS Observacao',
-                        'marca',
-                        'modelo',
-                        'ean AS EAM',
-                        'sub_grupo AS Subgrupo',
-                        'patrimonio'
-                    );
+                $query1 = $buildQuery('DBCompra', 'tbmaterial_aniel');
+                $query2 = $buildQuery('DBCompra', 'tb_material');
 
-                $query2 = \DB::table('tb_material')
-                    ->select(
-                        'id',
-                        'codmat AS CodMaterial',
-                        'descricao AS Descricao',
-                        'unid AS Unidade',
-                        'centrocusto AS CentroCusto',
-                        'saldo',
-                        'status',
-                        'data_cadastro AS DataCadastro',
-                        'obs AS Observacao',
-                        'marca',
-                        'modelo',
-                        'ean AS EAM',
-                        'sub_grupo AS Subgrupo',
-                        'patrimonio'
-                    );
+                // Roda as duas ao mesmo tempo (sequencial mas sem overhead de union cross-db)
+                $result1 = $query1->get();
+                $result2 = $query2->get();
 
-                $query = $query1->union($query2);
-            }
-
-            // 🔹 Aplica o filtro de centrocusto para ambas as consultas
-            if ($gestaoDescricao && $gestaoDescricao != 3) {
-                $query->where('centrocusto', 'LIKE', '%' . $gestaoDescricao . '%');
-            }
-
-            $material = $query->get();
+                // Merge em PHP — mais rápido que UNION cross-database
+                return $result1->concat($result2)->values();
+            });
 
             return response()->json($material, 200);
 
         } catch (\Exception $e) {
             \Log::error('Erro na busca de materiais: ' . $e->getMessage());
-            return response()->json(['error' => 'Erro interno do servidor' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Erro interno do servidor: ' . $e->getMessage()], 500);
         }
-
     }
 
     /**

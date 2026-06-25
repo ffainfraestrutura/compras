@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import LogoImage from "../../assets/images/logo.png";
+import LogoHallen from "../../assets/images/logo_hallen.png";
 import "./login.css";
 import { useState } from "react";
 import LoginForm from "../../components/form/loginForm";
@@ -27,6 +28,7 @@ export default function Auth() {
         <Card className="card login-card">
           <CardContent>
             <img src={LogoImage} alt="Logo" className="logo-image" />
+            <img src={LogoHallen} alt="Logo" className="logo-image-hallen" />
             <Divider></Divider>
             <LoginForm
               credentials={credentials}
