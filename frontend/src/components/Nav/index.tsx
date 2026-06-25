@@ -137,7 +137,9 @@ export default function Nav({ menuToggled, className = "" }: NavProps) {
 
   const handleLogout = () => {
     localStorage.clear();
-    navigate("/auth");
+    sessionStorage.clear();
+
+    window.location.href = "/auth";
   };
 
   // Função para verificar se um submenu deve ser exibido
