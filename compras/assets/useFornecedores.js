@@ -1,0 +1,1 @@
+import{r as e,a as f}from"./index.js";function i(){const[s,a]=e.useState([]),[c,o]=e.useState(!1),[n,u]=e.useState(!1),r="https://compras.painel-telecom.com/backend/public/api/fornecedores";return e.useEffect(()=>{o(!0),f.get(r).then(t=>a(t.data)).catch(t=>{console.error(t),u(!0)}).finally(()=>o(!1))},[r]),{fornecedores:s,loading:c,error:n}}export{i as u};
