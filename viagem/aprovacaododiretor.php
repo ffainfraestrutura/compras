@@ -160,7 +160,7 @@ $_6_meses = !isset($_GET['historico_completo']) || $_GET['historico_completo'] !
                                 <th>Valor</th>
                                 <th>Mudar Adiantamento</th>
                                 <th>Ver Descrição</th>
-                                <th>Aceite Diretor</th>
+                                <th>Aceite Diretor </th>
                                 <!-- <th>Ação</th> -->
                             </tr>
                         </thead>
