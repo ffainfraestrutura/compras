@@ -22,7 +22,7 @@ jobs:
               set -e
 
               # Altera os caminhos para apontar para a pasta 'dev'
-              APP_DIR="/opt/apps/frotas/dev"
+              APP_DIR="/opt/apps/compras/dev"
               RELEASES="$APP_DIR/releases"
               SHARED="$APP_DIR/shared"
               TIMESTAMP=$(date +%Y%m%d_%H%M%S)
@@ -35,7 +35,7 @@ jobs:
 
               # 2. Clonar a branch main/master direto para a nova pasta do timestamp
               # Alterado o parâmetro '-b' para a sua branch de development (main)
-              git clone -b development git@github.com:ffainfraestrutura/frotas.git "$NEW_RELEASE"
+              git clone -b development git@github.com:ffainfraestrutura/compras.git "$NEW_RELEASE"
 
               # Entrar na pasta do novo release e garantir permissões para o Apache/Docker
               cd "$NEW_RELEASE"
