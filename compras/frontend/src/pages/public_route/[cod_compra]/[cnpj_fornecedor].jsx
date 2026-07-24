@@ -327,7 +327,7 @@ const Index = () => {
 
   const handleDownload = () => {
     const link = document.createElement("a");
-    link.href = "https://ffasip.ddns.net:4545/compras/modelo_cotacao.xlsx";
+    link.href = "https://compras.painel-telecom.com/modelo_cotacao.xlsx";
     link.download = "modelo_cotacao.xlsx";
     document.body.appendChild(link);
     link.click();

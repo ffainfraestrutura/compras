@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:5173', 'https://ffasip.ddns.net:4747', 'https://ffasip.ddns.net:4545', 'http://localhost'],
+    'allowed_origins' => ['http://localhost:5173', 'https://compras.painel-telecom.com', 'https://ffasip.ddns.net:4545', 'http://localhost'],
 
     'allowed_origins_patterns' => [],
 

@@ -138,7 +138,7 @@ export default function SistemaAjuda() {
       showSnackbar("PDF não disponível para este módulo");
       return;
     }
-    window.open(`https://ffasip.ddns.net:4545/compras/ajuda/${modulo.url_pdf}`, '_blank');
+    window.open(`https://compras.painel-telecom.com/ajuda/${modulo.url_pdf}`, '_blank');
   };
 
   const handleDownloadPDF = async (modulo) => {
@@ -150,7 +150,7 @@ export default function SistemaAjuda() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `https://ffasip.ddns.net:4545/compras/ajuda/${modulo.url_pdf}`,
+        `https://compras.painel-telecom.com/ajuda/${modulo.url_pdf}`,
         {
           responseType: 'blob',
           headers: { Authorization: `Bearer ${token}` },

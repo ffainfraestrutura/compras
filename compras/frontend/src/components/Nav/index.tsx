@@ -68,7 +68,7 @@ export default function Nav({ menuToggled, className = "" }: NavProps) {
           Title: "Aprovar Solicitações",
           Route: "/Compras/gerente_material",
           roles: ["3"],
-          matriculasPermitidas: ["601000", "601014", "011178"]
+          matriculasPermitidas: ["601000", "601014", "089475"]
         },
         { 
           Title: "Conferir Pedidos", 

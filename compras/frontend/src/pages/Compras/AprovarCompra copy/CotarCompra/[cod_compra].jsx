@@ -481,7 +481,7 @@ const Index = () => {
   };
 
   const handleDownload = () => {
-    const url = "https://ffasip.ddns.net:4545/compras/modelo_cotacao.xlsx"; // Files in public/ are served from root
+    const url = "https://compras.painel-telecom.com/modelo_cotacao.xlsx"; // Files in public/ are served from root
     const link = document.createElement("a");
     link.href = url;
     link.download = "modelo_cotacao.xlsx";
